@@ -13,6 +13,12 @@ export const GlobalStyle = createGlobalStyle`
     -webkit-font-smoothing: antialiased; //suavisar fontes
   }
 
+  border-style, input, textarea, button {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+    font-size: 1rem;
+  }
+
   button {
     cursor: pointer;
   }
