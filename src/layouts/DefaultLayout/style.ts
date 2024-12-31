@@ -2,7 +2,7 @@ import styled from "styled-components";
 
 export const LayoutContainer = styled.div`
   max-width: 74rem;
-  height: calc(100vh - 5rem);
+  height: calc(100% - 5rem);
   margin: 2.5rem auto;
   padding: 2.5rem;
 
@@ -10,6 +10,7 @@ export const LayoutContainer = styled.div`
   border-radius: 8px;
   display: flex;
   flex-direction: column;
+ 
 `;
 
 
