@@ -60,3 +60,28 @@ export const HistoryList = styled.div`
         }
     }
 `
+
+const STATUS_COLORS = {
+    yellow: 'yellow-500',
+    green: 'green-500',
+    red: 'red-500'
+}as const //as const é utilizado para garantir que seja somente essas strings
+
+interface StatusProps {
+ statusColor: keyof typeof STATUS_COLORS; // typeof STATUS_COLORS retorna o tipo do objeto, e o keyof retorna as chaves do objeto
+}
+
+export const Status = styled.span<StatusProps>`
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    &::before { //before é o pseudo elemento que é criado antes do elemento
+        content: '';
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        background-color: ${props => props.theme[STATUS_COLORS[props.statusColor]]};
+
+    }
+`
