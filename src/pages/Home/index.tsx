@@ -2,7 +2,8 @@ import { Play } from "@phosphor-icons/react";
 import { useForm } from 'react-hook-form'; //por padrao hook form nao traz nada de validação. precisa usar zod ou outra lib
 import { zodResolver } from '@hookform/resolvers/zod'; //resolver para usar zod com hook form
 import * as zod from 'zod';
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { differenceInSeconds } from 'date-fns' // calcula a diferença entre duas datas em segundos
 
 
 import {
@@ -32,6 +33,7 @@ interface Cycle {
   id: string;
   task: string;
   minutesAmount: number;
+  startDate: Date;
 }
 
 export function Home() {
@@ -47,6 +49,24 @@ export function Home() {
       minutesAmount: 0,
     }
   }); //register retorna funçoes como onChange, onBlur. Watch monitora o valor de um campo
+  
+  const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
+
+  
+  useEffect(() => {
+    let interval: number;
+    if(activeCycle){
+      interval = setInterval(() => {
+        setAmountSecondsPassed(differenceInSeconds(new Date(), activeCycle.startDate))
+      }, 1000)
+    }
+
+    return () => {
+      clearInterval(interval)
+
+    }
+  }, [activeCycle])
+
 
   function handleCreateNewCycle(data: NewCycleFormData) {
 
@@ -56,17 +76,21 @@ export function Home() {
       id,
       task: data.task,
       minutesAmount: data.minutesAmount,
+      startDate: new Date(),
+
     }
    
     setCycles((state) => [...cycles, newCycle]) 
     //sempre que atualizar estado com base no estado anterior, usar arrow function
     // sao as closures que garantem que o estado está atualizado
     setActiveCycleId(id)
+    setAmountSecondsPassed(0)
     
     reset(); //funcao hookform reseta os valores do form
   }
 
-  const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
+   
+
   
   const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0;
   const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0;
@@ -79,6 +103,14 @@ export function Home() {
 
   const task = watch('task')
   const isSubmitDisabled = !task
+
+  useEffect(() => {
+
+    if(activeCycle){
+      document.title = `${minutes}:${seconds} Ignite Timer`
+    }
+
+  }, [minutes, seconds, activeCycle])
 
   return (
     <HomeContainer>
