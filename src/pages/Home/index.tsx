@@ -1,13 +1,17 @@
 import { HandPalm, Play } from "@phosphor-icons/react";
-import { useState, useEffect, createContext } from "react";
+import { useState, createContext } from "react";
 
 import {
   HomeContainer,
   StartCountdownButton,
   StopCountdownButton,
 } from "./style";
+
 import { NewCycleForm } from "./components/NewCycleForm";
 import { Countdown } from "./components/Countdown";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as zod from "zod";
+import { FormProvider, useForm } from "react-hook-form";
 
 interface Cycle {
   id: string;
@@ -18,18 +22,60 @@ interface Cycle {
   finishedAt?: Date;
 }
 
-interface cycleContextType{
-  act
-
+interface CyclesContextType {
+  activeCycle: Cycle | undefined;
+  activeCycleId: string | null;
+  amountSecondsPassed: number;
+  markCurrentCycleAsFinished: () => void;
+  setSecondsPassed: (seconds: number) => void;
 }
 
-const cycleContext = createContext<Cycle[]>([]);
+export const CyclesContext = createContext({} as CyclesContextType);
+
+const newCycleFormValidationSchema = zod.object({
+  task: zod.string().min(1, "Informe uma tarefa"),
+  minutesAmount: zod.number().min(5).max(60),
+});
+
+
+type NewCycleFormData = zod.infer<typeof newCycleFormValidationSchema>;
+// infer no zod é uma função que pega o tipo de um schema. Integrando com o ts
+
 
 export function Home() {
   const [cycles, setCycles] = useState<Cycle[]>([]);
   const [activeCycleId, setActiveCycleId] = useState<string | null>(null);
+  const [amountSecondsPassed, setAmountSecondsPassed] = useState(0);
+  
+  const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId);  
+  
+  const newCycleForm = useForm<NewCycleFormData>({
+    resolver: zodResolver(newCycleFormValidationSchema),
+    defaultValues: {
+      task: "",
+      minutesAmount: 0,
+    },
+  }); //register retorna funçoes como onChange, onBlur. Watch monitora o valor de um campo
+  
+  const { handleSubmit, watch, reset } = newCycleForm;
 
-  const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId);
+  
+  function setSecondsPassed(seconds: number) {
+    setAmountSecondsPassed(seconds);
+
+  }
+
+  function markCurrentCycleAsFinished() {
+    setCycles((state) =>
+      state.map((cycle) => {
+        if (cycle.id === activeCycleId) {
+          return { ...cycle, finishedAt: new Date() };
+        } else {
+          return cycle;
+        }
+      })
+    );
+  }
 
   function handleCreateNewCycle(data: NewCycleFormData) {
     const id = String(new Date().getTime());
@@ -64,28 +110,22 @@ export function Home() {
     setActiveCycleId(null);
   }
 
-  const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0;
-
-  const minutesAmount = Math.floor(currentSeconds / 60);
-  const secondsAmount = currentSeconds % 60;
-
-  const minutes = String(minutesAmount).padStart(2, "0");
-  const seconds = String(secondsAmount).padStart(2, "0");
 
   const task = watch("task");
   const isSubmitDisabled = !task;
 
-  useEffect(() => {
-    if (activeCycle) {
-      document.title = `${minutes}:${seconds} Ignite Timer`;
-    }
-  }, [minutes, seconds, activeCycle]);
-
   return (
     <HomeContainer>
       <form onSubmit={handleSubmit(handleCreateNewCycle)} action="">
-        <NewCycleForm />
-        <Countdown />
+        <CyclesContext.Provider
+          value={{ activeCycle, activeCycleId, markCurrentCycleAsFinished, amountSecondsPassed, setSecondsPassed }}
+        >
+          <FormProvider {...newCycleForm}>
+            <NewCycleForm />
+          </FormProvider>
+          <Countdown />
+
+        </CyclesContext.Provider>
 
         {activeCycle ? (
           <StopCountdownButton onClick={handleInterruptCycle} type="button">

@@ -1,32 +1,16 @@
-import { zodResolver } from "@hookform/resolvers/zod";
+
 import { FormContainer, TaskInput, MinutesInput } from "./style";
-import * as zod from "zod";
-import { useForm } from "react-hook-form";
-
-
-const newCycleFormValidationSchema = zod.object({
-  task: zod.string().min(1, "Informe uma tarefa"),
-  minutesAmount: zod.number().min(5).max(60),
-});
-
-type NewCycleFormData = zod.infer<typeof newCycleFormValidationSchema>;
-
-// infer no zod é uma função que pega o tipo de um schema. Integrando com o ts
+import { useContext } from "react";
+import { CyclesContext } from "../..";
+import { useFormContext } from "react-hook-form";
 
 export function NewCycleForm() {
+  const { activeCycle } = useContext(CyclesContext);
+  const { register } = useFormContext();
 
-  const { register, handleSubmit, watch, reset } = useForm<NewCycleFormData>({
-    resolver: zodResolver(newCycleFormValidationSchema),
-    defaultValues: {
-      task: "",
-      minutesAmount: 0,
-    },
-  }); //register retorna funçoes como onChange, onBlur. Watch monitora o valor de um campo
-    return (
+  return (
         <FormContainer>
-          <label htmlFor="task">
-          Vou trabalhar em
-          </label>
+          <label htmlFor="task">Vou trabalhar em</label>
           <TaskInput
             id="task"
             placeholder="Dê um nome para o seu projeto"
