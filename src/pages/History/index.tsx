@@ -1,6 +1,10 @@
+import { useContext } from 'react';
 import { HistoryContainer, HistoryList, Status } from './style';
+import { CyclesContext } from '../../contexts/CyclesContext';
 
 export function History() {
+
+    const { cycles } = useContext(CyclesContext)
     return (
         <HistoryContainer>
             <h1>Meu histórioco</h1>
@@ -16,45 +20,29 @@ export function History() {
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Tarefa</td>
-                            <td>20min</td>
-                            <td>Há 20min</td>
+                     {cycles.map(cycle => {
+                        return(
+                            <tr key={cycle.id}>
+                            <td>{cycle.task}</td>
+                            <td>{cycle.minutesAmount} minutos</td>
+                            <td>{cycle.startDate.toISOString()}</td>
                             <td>
-                            <Status statusColor='green'>Concluído</Status>
+                            {cycle.finishedAt && (
+                                <Status statusColor='green'>Concluído</Status>
+                            )}
+
+                            {cycle.interruptedAt && (
+                                <Status statusColor='red'>Interrompido</Status>
+                            )}
+
+                            {!cycle.finishedAt && !cycle.interruptedAt && (
+                                <Status statusColor='yellow'>Em Andamento</Status>
+                            )}
                             </td>
                         </tr>
-                        <tr>
-                            <td>Tarefa</td>
-                            <td>20min</td>
-                            <td>Há 20min</td>
-                            <td>
-                            <Status statusColor="green">Concluído</Status>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Tarefa</td>
-                            <td>20min</td>
-                            <td>Há 20min</td>
-                            <td>
-                            <Status statusColor="green">Concluído</Status>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Tarefa</td>
-                            <td>20min</td>
-                            <td>Há 20min</td>
-                            <td>
-                            <Status statusColor="yellow">Andamento</Status>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Tarefa</td>
-                            <td>20min</td>
-                            <td>Há 20min</td>
-                            <td><Status statusColor='red'>Pausado</Status></td>
-                           
-                        </tr>
+                        )
+                     })}
+                      
                     </tbody>
                 </table>
             </HistoryList>

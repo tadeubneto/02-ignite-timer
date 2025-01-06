@@ -1,23 +1,26 @@
 import { useContext, useEffect } from "react";
 import { CountdownContainer, Separator } from "./style";
 import { differenceInSeconds } from "date-fns";
-import { CyclesContext } from "../..";
-("date-fns");
+import { CyclesContext } from "../../../../contexts/CyclesContext";
 
 export function Countdown() {
-  const { activeCycle, activeCycleId, markCurrentCycleAsFinished, amountSecondsPassed, setSecondsPassed } =
+  const { 
+    activeCycle, 
+    activeCycleId, 
+    markCurrentCycleAsFinished, 
+    amountSecondsPassed, 
+    setSecondsPassed 
+  } =
     useContext(CyclesContext);
 
   const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0;
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;    
+    let interval: any;
+
     if (activeCycle) {
       interval = setInterval(() => {
-        const secondsPassed = differenceInSeconds(
-          new Date(),
-          activeCycle.startDate
-        );
+        const secondsPassed = differenceInSeconds(new Date(), new Date(activeCycle.startDate));
 
         if (secondsPassed >= totalSeconds) {
           markCurrentCycleAsFinished();
@@ -28,17 +31,13 @@ export function Countdown() {
         }
       }, 1000);
     }
-    
-    useEffect(() => {
-      if (activeCycle) {
-        document.title = `${minutes}:${seconds} Ignite Timer`;
-      }
-    }, [minutes, seconds, activeCycle]);
 
     return () => {
-      clearInterval(interval);
+      if (interval) {
+        clearInterval(interval);
+      }
     };
-  }, [activeCycle, totalSeconds, activeCycleId, markCurrentCycleAsFinished, setSecondsPassed]);
+  }, [activeCycle, activeCycleId, totalSeconds, markCurrentCycleAsFinished, setSecondsPassed]);
 
   const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0;
 
@@ -48,7 +47,13 @@ export function Countdown() {
   const minutes = String(minutesAmount).padStart(2, "0");
   const seconds = String(secondsAmount).padStart(2, "0");
 
- 
+  useEffect(() => {
+    if (activeCycle) {
+      document.title = `${minutes}:${seconds} Ignite Timer`;
+    } else {
+      document.title = "Ignite Timer";
+    }
+  }, [minutes, seconds, activeCycle]);
 
   return (
     <CountdownContainer>
